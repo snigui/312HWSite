@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<title>Page Title</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="">
+<style>
+html,body {font-family:"Verdana",sans-serif}
+h1,h2,h3,h4,h5,h6 {font-family:"Segoe UI",sans-serif}
+</style>
+<script src="/static/chat.js"></script>
+<body>
+<h2>This is a game</h2>
+<iframe src="/game" title="game"></iframe>
+
+<img src="img.jpg" alt="insert_image" style="width:100%">
+
+<h1>This is a Heading</h1>
+<p>This is a paragraph.</p>
+<p>This is a another paragraph.</p>
+<div id="text">
+  
+</div>
+
+<form id="chat-form" onsubmit="event.preventDefault();">
+		<input id="msg" type="text" name="message" placeholder="this is a chat box..." >
+		<button id="submit" onClick="submitChat()" type="submit">Send</button>
+</form>
+
+<div id="list">
+  <h4> This is a list</h4>
+<ul>
+  <li>User1</li>
+  <li>User2</li>
+  <li>User3</li>
+</ul>  
+
+</div>
+
+</body>
+</html>
+  
