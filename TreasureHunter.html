@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<body onkeypress="myKeyPress(event)">
+
+<p>score: <span id="score"></span></p>
+<canvas id="myCanvas" width="600" height="600" style="border:1px solid #d3d3d3;">
+    Your browser does not support the HTML5 canvas tag.
+</canvas>
+
+<script>
+    var c = document.getElementById("myCanvas");
+    var scoreOutput = document.getElementById("score");
+    var ctx = c.getContext("2d");
+    var squareSize = 20;
+    var boardSize = 600;
+    var squaresAcross = boardSize/squareSize;
+    var numberOfTreasures = 10;
+    var numberOfEnemies = 15;
+
+//    var treasure = [[1, 2], [7, 1], [10, 15], [20, 12], [15, 17], [24, 15], [16, 29]];
+//    var enemies = [[16, 11], [1, 5], [8, 19], [22, 24], [13, 11], [16, 19], [23, 21]];
+
+    var treasure = [];
+    var enemies = [];
+
+    for(var w=0; w<numberOfTreasures; w++){
+        treasure.push([randomCoordinate(), randomCoordinate()]);
+    }
+    for(var q=0; q<numberOfTreasures; q++){
+        enemies.push([randomCoordinate(), randomCoordinate()]);
+    }
+
+    var x = 15;
+    var y = 15;
+
+    var exitX = randomCoordinate();
+    var exitY = randomCoordinate();
+
+    var score = 50;
+    var codeProgress = "";
+    var konamiCode = "wwssadadkl";
+    var konamiActive = false;
+
+    var gameState = "normal";
+    var indexE = -1;
+
+    render();
+
+    function randomCoordinate(){
+        return Math.floor((Math.random() * squaresAcross));
+    }
+
+    function myKeyPress(e) {
+        var keynum;
+
+        if (window.event) { // IE
+            keynum = e.keyCode;
+        } else if (e.which) { // Netscape/Firefox/Opera
+            keynum = e.which;
+        }
+
+        var input = String.fromCharCode(keynum);
+
+        codeProgress += input;
+        if (konamiCode.lastIndexOf(codeProgress, 0) != 0) {
+            if(codeProgress == "www"){
+                codeProgress = "ww";
+            }else {
+                codeProgress = codeProgress[codeProgress.length - 1] == 'w' ? "w" : "";
+            }
+        } else if (codeProgress == konamiCode) {
+            konamiActive = true;
+        }
+
+        render();
+
+        if(gameState == "normal") {
+
+            if (input == "w") {
+                score += y > exitY ? 1 : -2;
+                y--;
+            } else if (input == "a") {
+                score += x > exitX ? 1 : -2;
+                x--;
+            } else if (input == "s") {
+                score += y < exitY ? 1 : -2;
+                y++;
+            } else if (input == "d") {
+                score += x < exitX ? 1 : -2;
+                x++;
+            } else if (input == "k") {
+                //b pressed;
+            } else if (input == "l") {
+                //a pressed;
+            } else {
+                score--;
+            }
+
+            render();
+
+            var indexT;
+            for (indexT = 0; indexT < treasure.length; indexT++) {
+                if (treasure[indexT][0] == x && treasure[indexT][1] == y) {
+                    score += 10;
+                    break;
+                }
+            }
+            if (indexT != treasure.length) {
+                treasure.splice(indexT, 1);
+            }
+
+            for (indexE = 0; indexE < enemies.length; indexE++) {
+                if (enemies[indexE][0] == x && enemies[indexE][1] == y) {
+                    gameState = "onEnemy";
+                    break;
+                }
+            }
+            if(gameState == "onEnemy" && konamiActive && indexE != enemies.length){
+                enemies.splice(indexE, 1);
+                gameState = "normal";
+            }
+
+            if(exitX == x && exitY == y) {
+                score += 100;
+                gameState = "finished";
+                render()
+                window.alert("Winner! You scored " + score + " points");
+                window.location.reload(false);
+            }
+
+        }else if(gameState == "onEnemy"){
+            if (input == "l") {
+                enemies.splice(indexE, 1);
+                indexE = -1;
+                gameState = "normal";
+            }else if(input == "k" || input == "w" || input == "a" || input == "s" || input == "d"){
+                // no movement
+            }else{
+                // invalid input
+                score--;
+            }
+        }else{
+            // game finished. Do nothing;
+            window.alert("You finished with " + score + " points");
+            window.location.reload(false);
+        }
+
+        if(score < 0){
+            score = 0;
+            gameState = "finished";
+            render()
+            window.alert("You ran out of points.. or is it health? We never really made it clear. Try again");
+            window.location.reload(false);
+        }
+        render();
+    }
+
+    function render() {
+        for (var i = 0; i < 50; i++) {
+            for (var j = 0; j < 50; j++) {
+                if ((i % 2 == 0 && j % 2 == 1) || (i % 2 == 1 && j % 2 == 0)) {
+                    ctx.fillStyle = konamiActive ? "#669900" : "grey";
+                    ctx.fillRect(i * squareSize, j * squareSize, squareSize, squareSize);
+                } else {
+                    ctx.fillStyle = konamiActive ? "#996600" : "white";
+                    ctx.fillRect(i * squareSize, j * squareSize, squareSize, squareSize);
+                }
+            }
+        }
+
+        ctx.fillStyle = "yellow";
+        for (var i1 = 0; i1 < treasure.length; i1++) {
+            ctx.fillRect(treasure[i1][0] * squareSize, treasure[i1][1] * squareSize, squareSize, squareSize);
+        }
+
+        ctx.fillStyle = "red";
+        for (var i3 = 0; i3 < enemies.length; i3++) {
+            ctx.fillRect(enemies[i3][0] * squareSize, enemies[i3][1] * squareSize, squareSize, squareSize);
+        }
+
+        ctx.beginPath();
+        ctx.arc((exitX + 0.5) * (squareSize), (exitY + 0.5) * (squareSize), squareSize / 2, 0, 2 * Math.PI);
+        ctx.fillStyle = "#ff9900";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc((x + 0.5) * (squareSize), (y + 0.5) * (squareSize), squareSize / 2, 0, 2 * Math.PI);
+        ctx.fillStyle = "blue";
+        ctx.fill();
+
+        scoreOutput.innerHTML = score;
+    }
+</script>
+
+
+</body>
+</html>
